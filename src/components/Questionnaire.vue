@@ -9,7 +9,7 @@
         :key="question.number"
       >
         <label v-bind:class="{ unanswered: unanswered[qIndex] }"
-          v-html="'Q' + question.number + '.' + question.question">
+          v-html="'Q' + question.number + '. ' + question.question">
           </label
         >
         <div class="col-12">
