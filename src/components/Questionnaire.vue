@@ -11,46 +11,50 @@
         <label v-bind:class="{ unanswered: unanswered[qIndex] }"
           >Q{{ question.number }}. {{ question.question }}</label
         >
-        <div class="col-12 inline-flex">
+        <div class="col-12">
           <div
-            class="options row inline-flex"
-            v-for="option in question.answers"
+            class="options row"
+            v-for="(option, aIndex) in question.answers"
             :key="option"
           >
-            <input
-              class="radio-button"
-              type="radio"
-              :id="option"
-              :value="option"
-              v-model="selectedAnswers[qIndex]"
-            />
-            <label :for="option">{{ option }}</label>
+            <label
+              class="card card-options"
+              :id="'Q' + qIndex + '_' + question.answers[aIndex]"
+            >
+              <input
+                class="radio-button"
+                type="radio"
+                :value="option"
+                v-model="selectedAnswers[qIndex]"
+              />
+              {{ option }}</label
+            >
           </div>
         </div>
       </div>
 
-      <div class="row">
-        <div class="col-3"></div>
-        <div class="col-3">
-          <button
-            class="btn btn-success submit w-100 text-center"
-            type="submit"
-          >
+      <div v-show="alert" class="row mx-auto">
+        <div class="col-12 mt-2">
+          <span class="text-danger"> Please answer all the questions ! </span>
+        </div>
+      </div>
+
+      <div class="row mx-auto">
+        <div class="col-sm-12 col-md-3 offset-md-3">
+          <button class="btn btn-success submit text-center" type="submit">
             Submit
           </button>
         </div>
 
-        <div class="col-3">
+        <div class="col-sm-12 col-md-3">
           <button
             @click="reset"
-            class="btn btn-info reset w-100 text-center"
+            class="btn btn-info reset text-center"
             type="reset"
           >
-            Reset
+            Clear
           </button>
         </div>
-
-        <div class="col-3"></div>
       </div>
     </form>
 
@@ -62,8 +66,10 @@
     >
 
     <div
+      id="results"
+      ref="resultView"
       v-if="list.length && (answeredCorrectly || answeredIncorrectly)"
-      class="chart-container mx-auto h-50"
+      class="chart-container mx-auto"
     >
       <bar-chart
         :datasets="datasets"
@@ -93,6 +99,8 @@ export default {
       unanswered: [],
       datasets: [],
       labels: [],
+      options: {},
+      alert: false,
     };
   },
   mounted() {
@@ -119,6 +127,7 @@ export default {
   methods: {
     validate: function (e) {
       e.preventDefault();
+
       for (var i = 0; i < this.selectedAnswers.length; i++) {
         if (!this.selectedAnswers[i]) {
           this.$set(this.unanswered, i, true);
@@ -127,6 +136,7 @@ export default {
         }
       }
       if (this.unanswered.every((el) => el == false)) {
+        this.alert = false;
         this.calculateScore();
         this.datasets = [];
         this.datasets.push({
@@ -135,7 +145,8 @@ export default {
           data: [this.answeredCorrectly, this.answeredIncorrectly],
         });
         this.options = {
-          responsive: false,
+          responsive: true,
+          maintainAspectRatio: false,
           scales: {
             yAxes: [
               {
@@ -152,6 +163,12 @@ export default {
           },
         };
         this.labels = ["Correct Answers", "Incorrect Answers"];
+        // After the whole view is rendered, use the reference (for v-if element)
+        this.$nextTick(() => {
+          this.$refs["resultView"].scrollIntoView();
+        });
+      } else {
+        this.alert = true;
       }
     },
     shuffle(array) {
@@ -163,14 +180,34 @@ export default {
       this.selectedAnswers = new Array(this.list.length).fill(undefined);
       this.answeredCorrectly = 0;
       this.answeredIncorrectly = 0;
+      this.alert = false;
+      for (var i = 0; i < this.list.length; i++) {
+        for (var j = 0; j < this.list[i].answers.length; j++) {
+          let answerElement = document.getElementById(
+            "Q" + i + "_" + this.list[i].answers[j]
+          );
+          answerElement.style.border = "";
+        }
+      }
     },
     calculateScore: function () {
-      console.log("this.list", this.list);
       for (var i = 0; i < this.list.length; i++) {
         if (this.selectedAnswers[i] === this.list[i]["correct_answer"]) {
           this.answeredCorrectly++;
+          let correctAnswerElement = document.getElementById(
+            "Q" + i + "_" + this.list[i]["correct_answer"]
+          );
+          correctAnswerElement.style.border = "thin solid #016148";
         } else {
           this.answeredIncorrectly++;
+          let wrongAnswerElement = document.getElementById(
+            "Q" + i + "_" + this.selectedAnswers[i]
+          );
+          wrongAnswerElement.style.border = "thin solid #FF0000";
+          let correctAnswerElement = document.getElementById(
+            "Q" + i + "_" + this.list[i]["correct_answer"]
+          );
+          correctAnswerElement.style.border = "thin solid #016148";
         }
       }
     },
@@ -180,6 +217,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.title {
+  /* font-size: 20px; */
+}
+
 .radio-button {
   margin-top: 5px;
   margin-right: 5px;
@@ -188,11 +229,13 @@ export default {
 .submit {
   margin-top: 20px;
   text-align: right;
+  width: 100%;
 }
 
 .reset {
   margin-top: 20px;
   text-align: left;
+  width: 100%;
 }
 
 .question-card {
@@ -222,8 +265,36 @@ export default {
 
 .chart-container {
   width: 50%;
-  border: 2px solid black;
   margin-bottom: 10px;
+}
+
+.options {
+  display: inherit !important;
+  overflow-wrap: break-word;
+}
+
+.card-options {
+  display: inherit !important;
+  padding: 5px;
+  overflow-wrap: break-word;
+}
+
+@media screen and (max-width: 760px) {
+  .submit {
+    margin-top: 20px;
+    text-align: right;
+    width: 70%;
+  }
+
+  .reset {
+    margin-top: 20px;
+    text-align: left;
+    width: 70%;
+  }
+
+  body {
+    font-size: 12px;
+  }
 }
 
 /* Safari */
