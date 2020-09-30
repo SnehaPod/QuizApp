@@ -8,11 +8,10 @@
         v-for="(question, qIndex) in list"
         :key="question.number"
       >
-        <label
-          v-bind:class="{ unanswered: unanswered[qIndex] }"
-          v-html="'Q' + question.number + '.' + question.question"
+        <label v-bind:class="{ unanswered: unanswered[qIndex] }"
+          v-html="'Q' + question.number + '.' + question.question">
+          </label
         >
-        </label>
         <div class="col-12">
           <div
             class="options row"
@@ -20,7 +19,6 @@
             :key="option"
           >
             <label
-              v-html="option"
               class="card card-options"
               :id="'Q' + qIndex + '_' + question.answers[aIndex]"
             >
@@ -30,7 +28,7 @@
                 :value="option"
                 v-model="selectedAnswers[qIndex]"
               />
-            </label>
+              <span v-html="option"></span></label>
           </div>
         </div>
       </div>
