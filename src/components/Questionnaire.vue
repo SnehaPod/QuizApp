@@ -165,7 +165,7 @@ export default {
         this.labels = ["Correct Answers", "Incorrect Answers"];
         // After the whole view is rendered, use the reference (for v-if element)
         this.$nextTick(() => {
-          this.$refs["resultView"].scrollIntoView({behavior: "smooth"});
+          this.$refs["resultView"].scrollIntoView();
         });
       } else {
         this.alert = true;
