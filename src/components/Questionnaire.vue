@@ -1,6 +1,6 @@
 <template>
   <div class="qa-list">
-    <b class="title">QUESTIONNAIRE</b>
+    <b class="title" ref="top">QUESTIONNAIRE</b>
 
     <form v-if="list.length" class="container py-2" @submit="validate">
       <div
@@ -106,7 +106,7 @@ export default {
   mounted() {
     axios
       .get(
-        "https://opentdb.com/api.php?amount=10&category=18&difficulty=medium&type=multiple"
+        "https://opentdb.com/api.php?amount=10&type=multiple"
       )
       .then((response) => {
         var questions = response.data.results;
@@ -165,7 +165,7 @@ export default {
         this.labels = ["Correct Answers", "Incorrect Answers"];
         // After the whole view is rendered, use the reference (for v-if element)
         this.$nextTick(() => {
-          this.$refs["resultView"].scrollIntoView();
+          this.$refs["resultView"].scrollIntoView({behavior: "smooth"});
         });
       } else {
         this.alert = true;
@@ -189,6 +189,7 @@ export default {
           answerElement.style.border = "";
         }
       }
+      this.$refs["top"].scrollIntoView({behavior: "smooth"});
     },
     calculateScore: function () {
       for (var i = 0; i < this.list.length; i++) {
